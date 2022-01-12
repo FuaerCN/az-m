@@ -32,7 +32,7 @@ def create_resource_group(subscription_id, credential, tag, location):
                                                                  )
 
 
-def create_or_update_vm(subscription_id, credential, tag, location, username, password, size, os, rootpwd, storgesize):
+def create_or_update_vm(subscription_id, credential, tag, location, username, password, size, os, custom, storgesize):
     global publisher, offer, sku
     compute_client = ComputeManagementClient(credential, subscription_id)
     RESOURCE_GROUP_NAME = tag
@@ -45,8 +45,8 @@ def create_or_update_vm(subscription_id, credential, tag, location, username, pa
     VM_NAME = tag
     USERNAME = username
     PASSWORD = password
-    ROOT_PWD = rootpwd
     SIZE = size
+    CUSTOM = custom
     STORGESIZE = int(storgesize)
     if os == "ubuntu20":
         publisher = "Canonical"
@@ -137,13 +137,6 @@ def create_or_update_vm(subscription_id, credential, tag, location, username, pa
                                                                 }
                                                                 )
     nic_result = poller.result()
-    s = "IyEvYmluL2Jhc2gKZWNobyByb290OnBweHdvMTIzIHxzdWRvIGNocGFzc3dkIHJvb3QKc3VkbyBzZWQgLWkgJ3MvXi4qUGVybWl0Um9vdExvZ2luLiovUGVybWl0Um9vdExvZ2luIHllcy9nJyAvZXRjL3NzaC9zc2hkX2NvbmZpZzsKc3VkbyBzZWQgLWkgJ3MvXi4qUGFzc3dvcmRBdXRoZW50aWNhdGlvbi4qL1Bhc3N3b3JkQXV0aGVudGljYXRpb24geWVzL2cnIC9ldGMvc3NoL3NzaGRfY29uZmlnOwpzdWRvIHNlcnZpY2Ugc3NoZCByZXN0YXJ0"
-    if (ROOT_PWD != ""):
-        d = base64.b64decode(s).decode('latin-1')
-        d = d.replace("ppxwo123", ROOT_PWD)
-        CUSTOM_DATA = base64.b64encode(d.encode("utf-8")).decode('latin-1')
-    else:
-        CUSTOM_DATA = s
     poller = compute_client.virtual_machines.create_or_update(RESOURCE_GROUP_NAME, VM_NAME,
                                                               {
                                                                   "location": LOCATION,
@@ -166,7 +159,7 @@ def create_or_update_vm(subscription_id, credential, tag, location, username, pa
                                                                       "computer_name": VM_NAME,
                                                                       "admin_username": USERNAME,
                                                                       "admin_password": PASSWORD,
-                                                                      "custom_data": CUSTOM_DATA
+                                                                      "custom_data": CUSTOM
                                                                   },
                                                                   "network_profile": {
                                                                       "network_interfaces": [{
@@ -222,38 +215,18 @@ def list(subscription_id, credential):
     compute_client = ComputeManagementClient(credential, subscription_id)
     info2 = compute_client.virtual_machines.list_all()
     iplist = []
-    ipnames = []
-
+    taglist = []
     for info in info:
         info = str(info)
-        info = info.replace('"', '').replace('/', '').replace('None', '"None"').replace("'", '"').replace("<",
-                                                                                                          '"').replace(
-            ">", '"')
-        info = json.loads(info)
-        ipname = info["name"]
-        ipname = ipname.replace('ip-', '')
-        ipadd = info["ip_address"]
-        iplist.append(ipadd)
-        ipnames.append(ipname)
-
+        info = str(info).replace("'", "").replace('"', "")
+        info = info.split(", ")[-7].split(" ")[1]
+        iplist.append(info)
     for info2 in info2:
         info2 = str(info2)
         info2 = str(info2).replace("'", "").replace('"', "")
         info2 = info2.split(", ")[2].split(" ")[1]
-        if info2 not in ipnames:
-            ipnames.append(info2)
-            iplist.append("None")
-    dict = {"ip": iplist, "tag": ipnames}
-
-    subscription_client = SubscriptionClient(credential)
-    names = []
-    idstatus = []
-    for subscription in subscription_client.subscriptions.list():
-        names.append(subscription.display_name)
-        idstatus.append(subscription.subscription_id + " " + str(subscription.state).replace('SubscriptionState.', ''))
-    dic = {"name": names, "id_status": idstatus}
-
-
-    return dict,dic
+        taglist.append(info2)
+    dict = {"ip": iplist, "tag": taglist}
+    return dict
 
 
