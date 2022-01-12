@@ -4,10 +4,10 @@
     <p>账户 {{ account }} 管理中 <a class="go" href="/account/list?account={{ account }}"  title="GO!">返回</a></p>
     <form method="post">
       <div>
-        <p><label>TAG(仅限英文数字组合) <input type="text" name="tag" autocomplete="off" required></label></p>
-        <p><label>VM用户名 <input type="text" name="vmusername" value="yeasty" autocomplete="off" required></label></p>
+        <p><label>TAG(英文+数字) <input type="text" name="tag" autocomplete="off" required></label></p>
+        <p><label>VM用户名(英文+数字) <input type="text" name="vmusername" value="yeasty" autocomplete="off" required></label></p>
         <p><label>VM密码【12位/大小写+数字】 <input type="text" name="vmpasswd" value="Yj@851730198" autocomplete="off" required></label></p>
-	<p><label>自定义脚本(请使用Base64预编码) <input type="text" name="custom" autocomplete="off" required></label></p>
+	<p><label>自定义脚本(Base64预编码) <input type="text" name="custom" autocomplete="off" required></label></p>
         <p><label>区域 <select name="location" required>
             <option value="eastasia">香港</option>
             <option value="southeastasia">新加坡</option>
